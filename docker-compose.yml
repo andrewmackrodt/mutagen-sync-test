@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  app:
+    image: nginx:mainline-alpine
+    volumes:
+      - code:/usr/share/nginx/html
+    networks:
+      - frontend
+
+volumes:
+  code:
+
+networks:
+  frontend:
+
+x-mutagen:
+  sync:
+    defaults:
+      # uncomment this block otherwise sync takes up to 10 seconds
+      # configurationAlpha:
+      #   watch:
+      #     pollingInterval: 1
+      configurationBeta:
+        permissions:
+          defaultOwner: id:101
+          defaultGroup: id:82
+          defaultFileMode: 0640
+          defaultDirectoryMode: 0750
+      ignore:
+        vcs: true
+      mode: two-way-resolved
+    code:
+      alpha: '.'
+      beta: volume://code
+  forward:
+    app:
+      source: tcp:localhost:5000
+      destination: "network://frontend:tcp:app:80"
